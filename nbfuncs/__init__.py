@@ -1,8 +1,11 @@
+"""Extract functions from notebooks."""
 from __future__ import annotations
-from dataclasses import asdict, dataclass
-import nbformat
-from pathlib import Path
+
 import ast
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+import nbformat
 
 
 @dataclass
@@ -15,14 +18,16 @@ class SubStrBound:
     end_col: int
 
 
-class NbFuncExtractor(ast.NodeVisitor):
+class FuncExtractor(ast.NodeVisitor):
     """AST node visitor to extract functions from arbitrary text."""
 
     def __init__(
-        self,
+        self: FuncExtractor,
+        src: str,
     ) -> None:
         """Add empty bounds - find when visiting AST tree."""
         self.func_bounds: list[SubStrBound] = []
+        self.src = src
 
     @staticmethod
     def _substr(
@@ -34,24 +39,25 @@ class NbFuncExtractor(ast.NodeVisitor):
         lines[-1] = lines[-1][:end_col]
         return "\n".join(lines)
 
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.FunctionDef:
+    def visit_FunctionDef(  # noqa: N802
+        self: FuncExtractor, node: ast.FunctionDef
+    ) -> ast.FunctionDef:
         """Add function string bounds to `self.func_bounds`."""
         self.func_bounds.append(
             SubStrBound(
                 start_ln=node.lineno,
-                end_ln=node.end_lineno,
+                end_ln=node.end_lineno or -1,
                 start_col=node.col_offset,
-                end_col=node.end_col_offset,
+                end_col=node.end_col_offset or -1,
             )
         )
         return node
 
-    def funcs(self, s: str) -> list[str]:
+    def funcs(self: FuncExtractor) -> list[str]:
         """Extract the function defitions from the rest of the string."""
-        self.visit(ast.parse(s))
-        return [self._substr(s, **asdict(bound)) for bound in self.func_bounds]
+        self.visit(ast.parse(self.src))
+        return [self._substr(self.src, **asdict(bound)) for bound in self.func_bounds]
 
 
 test = Path(__file__).parents[1] / "tests" / "files" / "test.ipynb"
 nb = nbformat.read(test, as_version=4)
-print(NbFuncExtractor().funcs(nb.cells[0].source))
