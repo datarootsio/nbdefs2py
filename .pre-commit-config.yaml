@@ -13,3 +13,8 @@ repos:
   hooks:
     - id: ruff
       args: ["--force-exclude", "--fix"]
+- repo: https://github.com/murilo-cunha/mirrors-pyre
+  rev: v0.9.17
+  hooks:
+    - id: pyre-check
+      additional_dependencies: ["nbformat==5.7.2"]
