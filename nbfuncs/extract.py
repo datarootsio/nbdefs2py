@@ -4,6 +4,8 @@ from __future__ import annotations
 import ast
 from dataclasses import asdict, dataclass
 
+from nbformat import NotebookNode
+
 
 @dataclass
 class SubStrBound:
@@ -18,10 +20,7 @@ class SubStrBound:
 class FuncExtractorStr(ast.NodeVisitor):
     """AST node visitor to extract functions from arbitrary text."""
 
-    def __init__(
-        self: FuncExtractorStr,
-        src: str,
-    ) -> None:
+    def __init__(self: FuncExtractorStr, src: str) -> None:
         """Add empty bounds - find when visiting AST tree."""
         self.func_bounds: list[SubStrBound] = []
         self.src = src
@@ -51,6 +50,15 @@ class FuncExtractorStr(ast.NodeVisitor):
         return node
 
     def funcs(self: FuncExtractorStr) -> list[str]:
-        """Extract the function defitions from the rest of the string."""
+        """Extract the function definitions from the rest of the string."""
         self.visit(ast.parse(self.src))
         return [self._substr(self.src, **asdict(bound)) for bound in self.func_bounds]
+
+
+def extract_funcs_nb(nb: NotebookNode) -> list[list[str]]:
+    """Extract functions from notebook code cells."""
+    return [
+        FuncExtractorStr(cell.source).funcs()
+        for cell in nb.cells
+        if cell.cell_type == "code"
+    ]

@@ -44,7 +44,7 @@ extra-dependencies = [
   "pre-commit",
   "pytest",
   "pytest-cov",
-  "pyre-check",
+  "ipykernel",
 ]
 [tool.hatch.envs.default.scripts]
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nbfuncs --cov=tests {args}"
