@@ -22,7 +22,7 @@ class FuncExtractorStr(ast.NodeVisitor):
 
     def __init__(self: FuncExtractorStr, src: str) -> None:
         """Add empty bounds - find when visiting AST tree."""
-        self.func_bounds: list[SubStrBound] = []
+        self.func_bounds: dict[str, SubStrBound] = {}
         self.src = src
 
     @staticmethod
@@ -39,23 +39,25 @@ class FuncExtractorStr(ast.NodeVisitor):
         self: FuncExtractorStr, node: ast.FunctionDef
     ) -> ast.FunctionDef:
         """Add function string bounds to `self.func_bounds`."""
-        self.func_bounds.append(
-            SubStrBound(
-                start_ln=node.lineno,
-                end_ln=node.end_lineno or -1,
-                start_col=node.col_offset,
-                end_col=node.end_col_offset or -1,
-            )
+        self.func_bounds[node.name] = SubStrBound(
+            start_ln=node.lineno,
+            end_ln=node.end_lineno or -1,
+            start_col=node.col_offset,
+            end_col=node.end_col_offset or -1,
         )
+
         return node
 
-    def funcs(self: FuncExtractorStr) -> list[str]:
+    def funcs(self: FuncExtractorStr) -> dict[str, str]:
         """Extract the function definitions from the rest of the string."""
         self.visit(ast.parse(self.src))
-        return [self._substr(self.src, **asdict(bound)) for bound in self.func_bounds]
+        return {
+            func: self._substr(self.src, **asdict(bound))
+            for func, bound in self.func_bounds.items()
+        }
 
 
-def extract_funcs_nb(nb: NotebookNode) -> list[list[str]]:
+def extract_funcs_nb(nb: NotebookNode) -> list[dict[str, str]]:
     """Extract functions from notebook code cells."""
     return [
         FuncExtractorStr(cell.source).funcs()
