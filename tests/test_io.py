@@ -1,21 +1,21 @@
 """Test extracting functions."""
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest  # pyre-ignore[21]
 
-from nbfuncs.io import export
+from nbfuncs.io import Function, export, extract
 
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
-FUNCS = """\
-def another_func() -> None:
-  ...
-
-def print_this(x: str) -> None:
-  print(x)
-
-def funcs_for_days(x: str, i: int) -> str:
-  \"\"\"Docstring.\"\"\"
-  return \"x: {x}; i: {i}\""""
+FUNCS = {
+    "another_func": "def another_func() -> None:\n  ...",
+    "print_this": "def print_this(x: str) -> None:\n  print(x)",
+    "funcs_for_days": (
+        'def funcs_for_days(x: str, i: int) -> str:\n  """Docstring."""\n'
+        '  return "x: {x}; i: {i}"'
+    ),
+}
 
 
 @pytest.mark.parametrize(
@@ -30,6 +30,27 @@ def funcs_for_days(x: str, i: int) -> str:
     ],
 )
 def test_export(source: Path, target: str, written: Path, tmp_path: Path) -> None:
-    """Extract functions from a source string."""
+    """Export functions from a source to target file."""
     export(source, tmp_path / target)
-    assert (tmp_path / written).read_text("utf-8") == FUNCS
+    assert (tmp_path / written).read_text("utf-8") == "\n\n".join(FUNCS.values())
+
+
+@pytest.mark.parametrize(
+    ("source", "include", "exclude"),
+    [
+        (NBPATH, None, None),
+        (NBPATH, ["another_func", "print_this"], None),
+        (NBPATH, None, ["another_func", "print_this"]),
+    ],
+)
+def test_extract(
+    source: Path, include: list[str] | None, exclude: list[str] | None
+) -> None:
+    """Extract functions from a source file."""
+    _keep = include or FUNCS.keys()
+    _remove = exclude or []
+    assert extract(src=source, include=include, exclude=exclude) == [
+        Function(name=fname, src=fsrc, path=NBPATH)
+        for fname, fsrc in FUNCS.items()
+        if fname in _keep and fname not in _remove
+    ]
