@@ -57,7 +57,7 @@ class FuncExtractorStr(ast.NodeVisitor):
         }
 
 
-def extract_funcs_nb(nb: NotebookNode) -> list[dict[str, str]]:
+def from_nb(nb: NotebookNode) -> list[dict[str, str]]:
     """Extract functions from notebook code cells."""
     return [
         FuncExtractorStr(cell.source).funcs()

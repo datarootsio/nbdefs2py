@@ -11,7 +11,7 @@ from typing import Any
 
 import nbformat
 
-from nbfuncs.extract import extract_funcs_nb
+from nbfuncs import funcs
 
 
 @dataclass
@@ -51,7 +51,7 @@ class PathNameError(Exception):
         )
 
 
-def extract_funcs(
+def extract(
     src: Path | str,
     include: list[str] | None = None,
     exclude: list[str] | None = None,
@@ -84,7 +84,7 @@ def extract_funcs(
         for path in nb_paths
     }
 
-    funcs = [
+    funcs_src = [
         Function(
             name=func_name,
             path=path,
@@ -92,14 +92,14 @@ def extract_funcs(
         )
         for path, node in nbs.items()
         for func_name, func_src in reduce(
-            lambda d1, d2: {**d1, **d2}, extract_funcs_nb(node), {}
+            lambda d1, d2: {**d1, **d2}, funcs.from_nb(node), {}
         ).items()
     ]
 
     if all(arg is None for arg in (include, exclude)):
-        return funcs
-    keep = include or ({f.name for f in funcs} - set(exclude))  # pyre-ignore[6]
-    return [func for func in funcs if func.name in keep]
+        return funcs_src
+    keep = include or ({f.name for f in funcs_src} - set(exclude))  # pyre-ignore[6]
+    return [func for func in funcs_src if func.name in keep]
 
 
 def export(
@@ -135,9 +135,9 @@ def export(
     else:
         dest.mkdir(parents=True, exist_ok=True)
 
-    funcs = extract_funcs(src=src, **extract_kwargs)
+    funcs_src = extract(src=src, **extract_kwargs)
     for _path, _funcs in groupby(
-        sorted(funcs, key=lambda e: e.path), key=lambda e: e.path
+        sorted(funcs_src, key=lambda e: e.path), key=lambda e: e.path
     ):
         target = (dest / _path.relative_to(src)).with_suffix(".py")
         target.touch(exist_ok=True)

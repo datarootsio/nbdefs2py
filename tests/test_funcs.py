@@ -3,7 +3,7 @@ from pathlib import Path
 
 import nbformat
 
-from nbfuncs.extract import FuncExtractorStr, extract_funcs_nb
+from nbfuncs.funcs import FuncExtractorStr, from_nb
 
 TEST_NB = Path(__file__).parent / "files" / "test.ipynb"
 
@@ -17,10 +17,10 @@ def test_extract_str() -> None:
     }
 
 
-def test_extract_funcs_nb() -> None:
+def test_from_nb() -> None:
     """Extract functions from a notebook file."""
     nb = nbformat.read(TEST_NB, as_version=4)
-    assert extract_funcs_nb(nb) == [
+    assert from_nb(nb) == [
         {
             "another_func": "def another_func() -> None:\n  ...",
             "print_this": "def print_this(x: str) -> None:\n  print(x)",
