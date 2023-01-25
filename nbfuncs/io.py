@@ -94,6 +94,7 @@ def _combine_funcs(
 
 def extract(
     src: Path | str,
+    ignore_glob: str = "**/!*",
     include: list[str] | None = None,
     exclude: list[str] | None = None,
     **read_kwargs: Any,  # noqa: ANN401
@@ -119,10 +120,14 @@ def extract(
     if all(arg is not None for arg in (include, exclude)):
         raise ValueError("Must specify exactly one of `include` or `exclude`.")
 
+    ignore = src.glob(ignore_glob)
     paths = list(
-        chain.from_iterable([src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX)])
-        if src.is_dir()
-        else [src]
+        filter(
+            lambda p: p not in ignore,
+            chain.from_iterable((src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX)))
+            if src.is_dir()
+            else [src],
+        )
     )
 
     if not _all_eq(path.suffix for path in paths):
@@ -177,6 +182,7 @@ def export(
     """
     src = Path(src)
     dest = Path(dest)
+
     if check_pathnames and src.is_file() ^ bool(dest.suffix):
         raise PathNameError(src, dest)
 
