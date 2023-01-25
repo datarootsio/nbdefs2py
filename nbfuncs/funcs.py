@@ -64,3 +64,13 @@ def from_nb(nb: NotebookNode) -> list[dict[str, str]]:
         for cell in nb.cells
         if cell.cell_type == "code"
     ]
+
+
+def from_src(src: str) -> dict[str, str]:
+    """Extract functions from source file."""
+    return FuncExtractorStr(src).funcs()
+
+
+def from_obj(obj: str | NotebookNode) -> list[dict[str, str]]:
+    """Extract functions from object (string or notebook)."""
+    return [from_src(obj)] if isinstance(obj, str) else from_nb(obj)
