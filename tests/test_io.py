@@ -10,11 +10,11 @@ from nbfuncs.io import Function, export, extract
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
 FUNCS = {
     "another_func": "def another_func() -> None:\n  ...",
-    "print_this": "def print_this(x: str) -> None:\n  print(x)",
     "funcs_for_days": (
         'def funcs_for_days(x: str, i: int) -> str:\n  """Docstring."""\n'
         '  return "x: {x}; i: {i}"'
     ),
+    "print_this": "def print_this(x: str) -> None:\n  print(x)",
 }
 
 
@@ -49,8 +49,8 @@ def test_extract(
     """Extract functions from a source file."""
     _keep = include or FUNCS.keys()
     _remove = exclude or []
-    assert extract(src=source, include=include, exclude=exclude) == [
+    assert set(extract(src=source, include=include, exclude=exclude)) == {
         Function(name=fname, src=fsrc, path=NBPATH)
         for fname, fsrc in FUNCS.items()
         if fname in _keep and fname not in _remove
-    ]
+    }

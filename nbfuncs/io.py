@@ -5,16 +5,19 @@ import errno
 import os
 from dataclasses import dataclass
 from functools import reduce
-from itertools import groupby
+from itertools import chain, groupby
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import nbformat
 
 from nbfuncs import funcs
 
+NB_SUFFIX = ".ipynb"
+PY_SUFFIX = ".py"
 
-@dataclass
+
+@dataclass(frozen=True)
 class Function:
     """Function representation from source file."""
 
@@ -51,6 +54,44 @@ class PathNameError(Exception):
         )
 
 
+def _all_eq(iterable: Iterable[Any]) -> bool:
+    """
+    Check that all elements in iterable are equal.
+
+    From `itertools` recipes. Check
+     `https://docs.python.org/3/library/itertools.html#itertools-recipes` for more
+     information.
+    """
+    g = groupby(iterable)
+    return bool(next(g, True)) and not next(g, False)  # noqa: FBT003
+
+
+def _combine_funcs(
+    src: list[Function], dest: list[Function], update: bool | None
+) -> Iterable[Function]:
+    """
+    Combines source and destination functions according to `update` strategy.
+
+    :param src: source functions
+    :param dest: destination functions
+    :param update: update destination functions, overwrite or upsert (`True`, `False`
+     and `None`, respectively)
+    :return: merged list of functions
+    """
+
+    def _first_match(el: Function, funcs: list[Function]) -> Function | None:
+        """Returns first match, if exists."""
+        return next((f for f in funcs if f.name == el.name), None)
+
+    funcs_update = dest if update else []
+    updated = filter(
+        lambda f: f is not None, (_first_match(func, src) for func in funcs_update)
+    )
+    if update is None:
+        return chain.from_iterable((dest, set(src) - {f for f in updated if f}))
+    return dest
+
+
 def extract(
     src: Path | str,
     include: list[str] | None = None,
@@ -72,27 +113,39 @@ def extract(
 
     if not src.exists():
         raise NotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), src)
-    if src.is_file() and src.suffix != ".ipynb":
+    if src.is_file() and src.suffix not in (PY_SUFFIX, NB_SUFFIX):
         raise FileSuffixError(src)
 
     if all(arg is not None for arg in (include, exclude)):
         raise ValueError("Must specify exactly one of `include` or `exclude`.")
 
-    nb_paths = list(src.rglob("*.ipynb")) if src.is_dir() else [src]
-    nbs = {
-        path: nbformat.read(path, **{"as_version": 4, **read_kwargs})
-        for path in nb_paths
-    }
+    paths = list(
+        chain.from_iterable([src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX)])
+        if src.is_dir()
+        else [src]
+    )
 
+    if not _all_eq(path.suffix for path in paths):
+        raise ValueError(
+            f"Expected only one file type, got {list({path.suffix for path in paths})}."
+        )
+    _src = {
+        path: nbformat.read(path, **{"as_version": 4, **read_kwargs})
+        if path.suffix == NB_SUFFIX
+        else path.read_text()
+        for path in paths
+    }
     funcs_src = [
         Function(
-            name=func_name,
+            name=fname,
             path=path,
-            src=func_src,
+            src=fsrc,
         )
-        for path, node in nbs.items()
-        for func_name, func_src in reduce(
-            lambda d1, d2: {**d1, **d2}, funcs.from_nb(node), {}
+        for path, node in _src.items()
+        for fname, fsrc in reduce(
+            lambda d1, d2: {**d1, **d2},
+            funcs.from_obj(node),
+            {},
         ).items()
     ]
 
@@ -106,7 +159,8 @@ def export(
     src: Path | str,
     dest: Path | str,
     *,
-    overwrite: bool = False,
+    update_funcs: bool | None = None,
+    exist_ok: bool = True,
     check_pathnames: bool = True,
     **extract_kwargs: Any,  # noqa: ANN401
 ) -> None:
@@ -115,7 +169,10 @@ def export(
 
     :param src: source location (file or directory)
     :param dest: destination location (file or directory)
-    :param overwrite: overwrite destination - if exists, defaults to `False`
+    :param update_funcs: `True` only updates existing functions in destination, `False`
+     overwrites and None will upsert functions, defaults to `None`
+    :param exist_ok: allow existing destination file
+    :param check_pathnames: check that files end in `.py` and directories do not
     :param extract_kwargs: keyword arguments to pass to `extract`
     """
     src = Path(src)
@@ -123,10 +180,10 @@ def export(
     if check_pathnames and src.is_file() ^ bool(dest.suffix):
         raise PathNameError(src, dest)
 
-    if dest.exists() and not overwrite:
+    if dest.exists() and not exist_ok:
         raise ExistsError(
             errno.EEXIST,
-            "Destination already exists. Pass `overwrite=True` overwrite file(s).",
+            "Destination already exists and `exist_ok=False`.",
             dest,
         )
 
@@ -136,9 +193,12 @@ def export(
         dest.mkdir(parents=True, exist_ok=True)
 
     funcs_src = extract(src=src, **extract_kwargs)
+    funcs_dst = extract(src=dest)
+    funcs_all = _combine_funcs(funcs_src, funcs_dst, update=update_funcs)
+
     for _path, _funcs in groupby(
-        sorted(funcs_src, key=lambda e: e.path), key=lambda e: e.path
+        sorted(funcs_all, key=lambda e: e.path), key=lambda e: e.path
     ):
-        target = (dest / _path.relative_to(src)).with_suffix(".py")
+        target = (dest / _path.relative_to(src)).with_suffix(PY_SUFFIX)
         target.touch(exist_ok=True)
-        target.write_text("\n\n".join((f.src for f in _funcs)))
+        target.write_text("\n\n".join(sorted(f.src for f in _funcs)))
