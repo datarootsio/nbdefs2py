@@ -6,7 +6,7 @@ import argparse
 from nbfuncs.io import export
 
 parser = argparse.ArgumentParser(
-    prog="python -m nbfuncs", description="Extract functions from notebooks."
+    prog="python -m nbfuncs", description="Extract definitions from notebooks."
 )
 parser.add_argument("source", metavar="SRC", type=str, help="source file/path")
 parser.add_argument("destination", metavar="DST", type=str, help="target file/path")
