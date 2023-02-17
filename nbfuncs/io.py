@@ -70,7 +70,7 @@ def _combine_funcs(
     src: list[Function], dest: list[Function], update: bool | None
 ) -> Iterable[Function]:
     """
-    Combines source and destination functions according to `update` strategy.
+    Combine source and destination functions according to `update` strategy.
 
     :param src: source functions
     :param dest: destination functions
@@ -80,7 +80,7 @@ def _combine_funcs(
     """
 
     def _first_match(el: Function, funcs: list[Function]) -> Function | None:
-        """Returns first match, if exists."""
+        """Return first match, if exists."""
         return next((f for f in funcs if f.name == el.name), None)
 
     funcs_update = dest if update else []
@@ -94,7 +94,7 @@ def _combine_funcs(
 
 def extract(
     src: Path | str,
-    ignore_glob: str = "**/!*",
+    ignore: str | None = None,
     include: list[str] | None = None,
     exclude: list[str] | None = None,
     **read_kwargs: Any,  # noqa: ANN401
@@ -103,6 +103,7 @@ def extract(
     Extract functions from `src` and write to `dest`.
 
     :param src: source location (file or directory)
+    :param ignore: glob expression of files to ignore, defaults to `None`
     :param include: functions to include (`None` for all), defaults to `None`
     :param exclude: functions to exclude (`None` for none), defaults to `None`
     :param read_kwargs: keyword arguments to pass to `nbformat.read`
@@ -120,11 +121,11 @@ def extract(
     if all(arg is not None for arg in (include, exclude)):
         raise ValueError("Must specify exactly one of `include` or `exclude`.")
 
-    ignore = src.glob(ignore_glob)
+    ignore_glob = src.glob(ignore or "**/!*")
     paths = list(
         filter(
-            lambda p: p not in ignore,
-            chain.from_iterable((src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX)))
+            lambda p: p not in ignore_glob,
+            chain.from_iterable(src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX))
             if src.is_dir()
             else [src],
         )
@@ -161,10 +162,10 @@ def extract(
 
 
 def export(
-    src: Path | str,
-    dest: Path | str,
+    source: Path | str,
+    destination: Path | str,
     *,
-    update_funcs: bool | None = None,
+    update: bool | None = None,
     exist_ok: bool = True,
     check_pathnames: bool = True,
     **extract_kwargs: Any,  # noqa: ANN401
@@ -174,37 +175,37 @@ def export(
 
     :param src: source location (file or directory)
     :param dest: destination location (file or directory)
-    :param update_funcs: `True` only updates existing functions in destination, `False`
+    :param update: `True` only updates existing functions in destination, `False`
      overwrites and None will upsert functions, defaults to `None`
     :param exist_ok: allow existing destination file
     :param check_pathnames: check that files end in `.py` and directories do not
     :param extract_kwargs: keyword arguments to pass to `extract`
     """
-    src = Path(src)
-    dest = Path(dest)
+    source = Path(source)
+    destination = Path(destination)
 
-    if check_pathnames and src.is_file() ^ bool(dest.suffix):
-        raise PathNameError(src, dest)
+    if check_pathnames and source.is_file() ^ bool(destination.suffix):
+        raise PathNameError(source, destination)
 
-    if dest.exists() and not exist_ok:
+    if destination.exists() and not exist_ok:
         raise ExistsError(
             errno.EEXIST,
             "Destination already exists and `exist_ok=False`.",
-            dest,
+            destination,
         )
 
-    if src.is_file():
-        dest.touch(exist_ok=True)
+    if source.is_file():
+        destination.touch(exist_ok=True)
     else:
-        dest.mkdir(parents=True, exist_ok=True)
+        destination.mkdir(parents=True, exist_ok=True)
 
-    funcs_src = extract(src=src, **extract_kwargs)
-    funcs_dst = extract(src=dest)
-    funcs_all = _combine_funcs(funcs_src, funcs_dst, update=update_funcs)
+    funcs_src = extract(src=source, **extract_kwargs)
+    funcs_dst = extract(src=destination)
+    funcs_all = _combine_funcs(funcs_src, funcs_dst, update=update)
 
     for _path, _funcs in groupby(
         sorted(funcs_all, key=lambda e: e.path), key=lambda e: e.path
     ):
-        target = (dest / _path.relative_to(src)).with_suffix(PY_SUFFIX)
+        target = (destination / _path.relative_to(source)).with_suffix(PY_SUFFIX)
         target.touch(exist_ok=True)
         target.write_text("\n\n".join(sorted(f.src for f in _funcs)))
