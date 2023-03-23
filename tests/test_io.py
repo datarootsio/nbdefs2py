@@ -44,7 +44,9 @@ def test_export(source: Path, target: str, written: Path, tmp_path: Path) -> Non
     ],
 )
 def test_extract(
-    source: Path, include: list[str] | None, exclude: list[str] | None
+    source: Path,
+    include: list[str] | None,
+    exclude: list[str] | None,
 ) -> None:
     """Extract functions from a source file."""
     _keep = include or FUNCS.keys()

@@ -27,7 +27,12 @@ class FuncExtractorStr(ast.NodeVisitor):
 
     @staticmethod
     def _substr(
-        s: str, *, start_ln: int, end_ln: int, start_col: int, end_col: int
+        s: str,
+        *,
+        start_ln: int,
+        end_ln: int,
+        start_col: int,
+        end_col: int,
     ) -> str:
         """Get a substring from start and end lines and columns."""
         lines = s.splitlines()[start_ln - 1 : end_ln]
@@ -36,7 +41,8 @@ class FuncExtractorStr(ast.NodeVisitor):
         return "\n".join(lines)
 
     def visit_FunctionDef(  # noqa: N802
-        self: FuncExtractorStr, node: ast.FunctionDef
+        self: FuncExtractorStr,
+        node: ast.FunctionDef,
     ) -> ast.FunctionDef:
         """Add function string bounds to `self.func_bounds`."""
         self.func_bounds[node.name] = SubStrBound(

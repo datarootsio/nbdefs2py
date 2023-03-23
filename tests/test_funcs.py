@@ -30,6 +30,6 @@ def test_from_nb() -> None:
             "funcs_for_days": (
                 "def funcs_for_days(x: str, i: int) -> str:\n"
                 '  """Docstring."""\n  return "x: {x}; i: {i}"'
-            )
+            ),
         },
     ]

@@ -50,7 +50,7 @@ class PathNameError(Exception):
         super().__init__(
             f"'{str(src)}' is a {'directory' if src.is_dir() else 'file'}"
             f" and '{str(dest)}' has '{dest.suffix}' suffix."
-            " If this is the desired behavior, pass `check_pathnames=False`"
+            " If this is the desired behavior, pass `check_pathnames=False`",
         )
 
 
@@ -67,7 +67,9 @@ def _all_eq(iterable: Iterable[Any]) -> bool:
 
 
 def _combine_funcs(
-    src: list[Function], dest: list[Function], update: bool | None
+    src: list[Function],
+    dest: list[Function],
+    update: bool | None,
 ) -> Iterable[Function]:
     """
     Combine source and destination functions according to `update` strategy.
@@ -85,7 +87,8 @@ def _combine_funcs(
 
     funcs_update = dest if update else []
     updated = filter(
-        lambda f: f is not None, (_first_match(func, src) for func in funcs_update)
+        lambda f: f is not None,
+        (_first_match(func, src) for func in funcs_update),
     )
     if update is None:
         return chain.from_iterable((dest, set(src) - {f for f in updated if f}))
@@ -128,12 +131,13 @@ def extract(
             chain.from_iterable(src.rglob(f"*{s}") for s in (NB_SUFFIX, PY_SUFFIX))
             if src.is_dir()
             else [src],
-        )
+        ),
     )
 
     if not _all_eq(path.suffix for path in paths):
         raise ValueError(
-            f"Expected only one file type, got {list({path.suffix for path in paths})}."
+            "Expected only one file type, got"
+            f" {list({path.suffix for path in paths})}.",
         )
     _src = {
         path: nbformat.read(path, **{"as_version": 4, **read_kwargs})
@@ -204,7 +208,8 @@ def export(
     funcs_all = _combine_funcs(funcs_src, funcs_dst, update=update)
 
     for _path, _funcs in groupby(
-        sorted(funcs_all, key=lambda e: e.path), key=lambda e: e.path
+        sorted(funcs_all, key=lambda e: e.path),
+        key=lambda e: e.path,
     ):
         target = (destination / _path.relative_to(source)).with_suffix(PY_SUFFIX)
         target.touch(exist_ok=True)
