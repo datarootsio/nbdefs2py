@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest  # pyre-ignore[21]
 
-from nbfuncs.io import Function, export, extract
+from nbdefs.io import Function, export, extract
 
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
 FUNCS = {

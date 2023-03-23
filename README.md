@@ -1,21 +1,22 @@
-# nbfuncs
+# nbdefs
 
-[![PyPI - Version](https://img.shields.io/pypi/v/nbfuncs.svg)](https://pypi.org/project/nbfuncs)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbfuncs.svg)](https://pypi.org/project/nbfuncs)
+[![PyPI - Version](https://img.shields.io/pypi/v/nbdefs.svg)](https://pypi.org/project/nbdefs)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbdefs.svg)](https://pypi.org/project/nbdefs)
 
 -----
 
 **Table of Contents**
 
-- [Installation](#installation)
-- [License](#license)
+- [nbdefs](#nbdefs)
+  - [Installation](#installation)
+  - [License](#license)
 
 ## Installation
 
 ```console
-pip install nbfuncs
+pip install nbdefs
 ```
 
 ## License
 
-`nbfuncs` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+`nbdefs` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

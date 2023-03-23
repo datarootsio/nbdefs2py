@@ -3,7 +3,7 @@ from pathlib import Path
 
 import nbformat
 
-from nbfuncs.funcs import FuncExtractorStr, from_nb
+from nbdefs.funcs import FuncExtractorStr, from_nb
 
 TEST_NB = Path(__file__).parent / "files" / "test.ipynb"
 

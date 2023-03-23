@@ -11,7 +11,7 @@ from typing import Any, Iterable
 
 import nbformat
 
-from nbfuncs import funcs
+from nbdefs import funcs
 
 NB_SUFFIX = ".ipynb"
 PY_SUFFIX = ".py"

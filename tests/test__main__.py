@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest  # pyre-ignore[21]
 from _pytest.capture import CaptureFixture  # pyre-ignore[21]
 
-from nbfuncs.__main__ import main
+from nbdefs.__main__ import main
 
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
 
