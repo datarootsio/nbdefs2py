@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import ast
 from dataclasses import asdict, dataclass
+from typing import TypeVar
 
 from nbformat import NotebookNode
+
+DefNode = TypeVar("DefNode", ast.ClassDef, ast.FunctionDef)
 
 
 @dataclass
@@ -40,19 +43,31 @@ class FuncExtractorStr(ast.NodeVisitor):
         lines[-1] = lines[-1][:end_col]
         return "\n".join(lines)
 
-    def visit_FunctionDef(  # noqa: N802
+    def visit_def(
         self: FuncExtractorStr,
-        node: ast.FunctionDef,
-    ) -> ast.FunctionDef:
-        """Add function string bounds to `self.func_bounds`."""
+        node: DefNode,
+    ) -> DefNode:
+        """Node visitor for class and function definitions."""
         self.func_bounds[node.name] = SubStrBound(
             start_ln=node.lineno,
             end_ln=node.end_lineno or -1,
             start_col=node.col_offset,
             end_col=node.end_col_offset or -1,
         )
-
         return node
+
+    def visit_FunctionDef(  # noqa: N802
+        self: FuncExtractorStr,
+        node: ast.FunctionDef,
+    ) -> ast.FunctionDef:
+        """Add function string bounds to `self.func_bounds`."""
+        return self.visit_def(node=node)
+
+    def visit_ClassDef(  # noqa: N802
+        self: FuncExtractorStr, node: ast.ClassDef
+    ) -> ast.ClassDef:
+        """Add class string bounds to `self.func_bounds`."""
+        return self.visit_def(node=node)
 
     def funcs(self: FuncExtractorStr) -> dict[str, str]:
         """Extract the function definitions from the rest of the string."""

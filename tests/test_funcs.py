@@ -32,4 +32,13 @@ def test_from_nb() -> None:
                 '  """Docstring."""\n  return "x: {x}; i: {i}"'
             ),
         },
+        {
+            "SomeClass": (
+                "class SomeClass:\n"
+                "    def __init__():\n"
+                "        self.somethin = None\n\n"
+                "    def gimme_somethin(self):\n"
+                "        return self.somethin"
+            )
+        },
     ]

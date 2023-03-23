@@ -5,10 +5,17 @@ from pathlib import Path
 
 import pytest  # pyre-ignore[21]
 
-from nbdefs.io import Function, export, extract
+from nbdefs.io import Definition, export, extract
 
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
 FUNCS = {
+    "SomeClass": (
+        "class SomeClass:\n"
+        "    def __init__():\n"
+        "        self.somethin = None\n\n"
+        "    def gimme_somethin(self):\n"
+        "        return self.somethin"
+    ),
     "another_func": "def another_func() -> None:\n  ...",
     "funcs_for_days": (
         'def funcs_for_days(x: str, i: int) -> str:\n  """Docstring."""\n'
@@ -52,7 +59,7 @@ def test_extract(
     _keep = include or FUNCS.keys()
     _remove = exclude or []
     assert set(extract(src=source, include=include, exclude=exclude)) == {
-        Function(name=fname, src=fsrc, path=NBPATH)
+        Definition(name=fname, src=fsrc, path=NBPATH)
         for fname, fsrc in FUNCS.items()
         if fname in _keep and fname not in _remove
     }

@@ -18,7 +18,7 @@ PY_SUFFIX = ".py"
 
 
 @dataclass(frozen=True)
-class Function:
+class Definition:
     """Function representation from source file."""
 
     name: str
@@ -67,10 +67,10 @@ def _all_eq(iterable: Iterable[Any]) -> bool:
 
 
 def _combine_funcs(
-    src: list[Function],
-    dest: list[Function],
+    src: list[Definition],
+    dest: list[Definition],
     update: bool | None,
-) -> Iterable[Function]:
+) -> Iterable[Definition]:
     """
     Combine source and destination functions according to `update` strategy.
 
@@ -81,7 +81,7 @@ def _combine_funcs(
     :return: merged list of functions
     """
 
-    def _first_match(el: Function, funcs: list[Function]) -> Function | None:
+    def _first_match(el: Definition, funcs: list[Definition]) -> Definition | None:
         """Return first match, if exists."""
         return next((f for f in funcs if f.name == el.name), None)
 
@@ -101,7 +101,7 @@ def extract(
     include: list[str] | None = None,
     exclude: list[str] | None = None,
     **read_kwargs: Any,  # noqa: ANN401
-) -> list[Function]:
+) -> list[Definition]:
     """
     Extract functions from `src` and write to `dest`.
 
@@ -146,7 +146,7 @@ def extract(
         for path in paths
     }
     funcs_src = [
-        Function(
+        Definition(
             name=fname,
             path=path,
             src=fsrc,
