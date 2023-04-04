@@ -93,7 +93,7 @@ def _combine_funcs(
         """Return first match, if exists."""
         return next((f for f in funcs if f.name == el.name), None)
 
-    funcs_update = dest if update else []
+    funcs_update = dest if update in (True, None) else []
     updated = filter(
         lambda f: f is not None,
         (_first_match(func, src) for func in funcs_update),

@@ -12,6 +12,7 @@ from nbdefs.io import (
     InputsError,
     NotFoundError,
     PathNameError,
+    _combine_funcs,
     export,
     extract,
 )
@@ -115,6 +116,60 @@ def test_errors(tmp_path: Path) -> None:
         export(NBPATH, tmp_path / "target.py", exist_ok=False)
 
 
-def test__combine_funcs() -> None:
+def test__combine_funcs_update() -> None:
     """Combine functions from source and destinations."""
-    ...
+    foo = Path("foo.py")
+    bar = Path("bar.py")
+    src = [
+        Definition(
+            name="another_func",
+            path=bar,
+            src="def another_func() -> None:\n  ...",
+        ),
+        Definition(
+            name="print_this",
+            path=foo,
+            src="def print_this(x: str) -> None:\n  print(x)",
+        ),
+    ]
+    dest = [
+        Definition(
+            name="print_that",
+            path=foo,
+            src="def print_this(x: str) -> None:\n  print('out:', x)",
+        ),
+        Definition(
+            name="another_func",
+            path=bar,
+            src="def another_func() -> None:\n  return",
+        ),
+    ]
+    assert set(_combine_funcs(src=src, dest=dest, update=None)) == {
+        Definition(
+            name="print_that",
+            path=foo,
+            src="def print_this(x: str) -> None:\n  print('out:', x)",
+        ),
+        Definition(
+            name="print_this",
+            path=foo,
+            src="def print_this(x: str) -> None:\n  print(x)",
+        ),
+        Definition(
+            name="another_func",
+            path=bar,
+            src="def another_func() -> None:\n  return",
+        ),
+    }
+    assert set(_combine_funcs(src=src, dest=dest, update=True)) == {
+        Definition(
+            name="another_func",
+            path=bar,
+            src="def another_func() -> None:\n  return",
+        ),
+        Definition(
+            name="print_that",
+            path=foo,
+            src="def print_this(x: str) -> None:\n  print('out:', x)",
+        ),
+    }
