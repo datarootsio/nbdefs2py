@@ -23,6 +23,7 @@ repos:
     - id: pytest
       name: pytest
       language: python
-      entry: hatch run dev:pytest -v
+      entry: hatch run dev:pytest --cov-fail-under=100 -v
+      types: [python]
       pass_filenames: false
       stages: [push]
