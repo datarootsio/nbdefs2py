@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "nbdefs"
+name = "nbdefs2py"
 description = ''
 readme = "README.md"
 requires-python = ">=3.7"
@@ -27,12 +27,12 @@ dependencies = []
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/nbdefs#readme"
-Issues = "https://github.com/unknown/nbdefs/issues"
-Source = "https://github.com/unknown/nbdefs"
+Documentation = "https://github.com/unknown/nbdefs2py#readme"
+Issues = "https://github.com/unknown/nbdefs2py/issues"
+Source = "https://github.com/unknown/nbdefs2py"
 
 [tool.hatch.version]
-path = "nbdefs/__about__.py"
+path = "nbdefs2py/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -47,7 +47,7 @@ extra-dependencies = [
   "ipykernel",
 ]
 [tool.hatch.envs.default.scripts]
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nbdefs --cov=tests {args}"
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nbdefs2py --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
 
 [[tool.hatch.envs.test.matrix]]
@@ -57,7 +57,7 @@ python = ["37", "38", "39", "310", "311"]
 branch = true
 parallel = true
 omit = [
-  "nbdefs/__about__.py",
+  "nbdefs2py/__about__.py",
 ]
 
 [tool.coverage.report]

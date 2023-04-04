@@ -1,20 +1,20 @@
-# nbdefs
+# nbdefs2py
 
-[![PyPI - Version](https://img.shields.io/pypi/v/nbdefs.svg)](https://pypi.org/project/nbdefs)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbdefs.svg)](https://pypi.org/project/nbdefs)
+[![PyPI - Version](https://img.shields.io/pypi/v/nbdefs.svg)](https://pypi.org/project/nbdefs2py)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbdefs2py.svg)](https://pypi.org/project/nbdefs2py)
 
 -----
 
 **Table of Contents**
 
-- [nbdefs](#nbdefs)
+- [nbdefs2py](#nbdefs2py)
   - [Installation](#installation)
   - [License](#license)
 
 ## Installation
 
 ```console
-pip install nbdefs
+pip install nbdefs2py
 ```
 
 ## License

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest  # pyre-ignore[21]
 
-from nbdefs.io import (
+from nbdefs2py.io import (
     Definition,
     ExistsError,
     FileSuffixError,

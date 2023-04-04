@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 
-from nbdefs.io import export
+from nbdefs2py.io import export
 
 parser = argparse.ArgumentParser(
     prog="python -m nbfuncs",

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest  # pyre-ignore[21]
 from _pytest.capture import CaptureFixture  # pyre-ignore[21]
 
-from nbdefs.__main__ import main
+from nbdefs2py.__main__ import main
 from tests.test_io import FUNCS, NBPATH
 
 
