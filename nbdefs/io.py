@@ -42,6 +42,14 @@ class FileSuffixError(Exception):
         super().__init__(f"{message or self.__doc__} Got `{file.suffix}`.")
 
 
+class InputsError(ValueError):
+    """Invalid inputs."""
+
+    def __init__(self: InputsError, message: str | None = None) -> None:
+        """Print custom message."""
+        super().__init__(message or self.__doc__)
+
+
 class PathNameError(Exception):
     """Path name does not match expected."""
 
@@ -122,7 +130,7 @@ def extract(
         raise FileSuffixError(src)
 
     if all(arg is not None for arg in (include, exclude)):
-        raise ValueError("Must specify exactly one of `include` or `exclude`.")
+        raise InputsError("Must specify at least one of `include` or `exclude`.")
 
     ignore_glob = src.glob(ignore or "**/!*")
     paths = list(
@@ -135,7 +143,7 @@ def extract(
     )
 
     if not _all_eq(path.suffix for path in paths):
-        raise ValueError(
+        raise InputsError(
             "Expected only one file type, got"
             f" {list({path.suffix for path in paths})}.",
         )
@@ -211,6 +219,10 @@ def export(
         sorted(funcs_all, key=lambda e: e.path),
         key=lambda e: e.path,
     ):
-        target = (destination / _path.relative_to(source)).with_suffix(PY_SUFFIX)
+        target = (
+            (destination / _path.relative_to(source)).with_suffix(PY_SUFFIX)
+            if source in (*_path.parents, _path)  # pyre-ignore[60]
+            else _path
+        )
         target.touch(exist_ok=True)
         target.write_text("\n\n".join(sorted(f.src for f in _funcs)))

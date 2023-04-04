@@ -25,3 +25,4 @@ repos:
       language: python
       entry: hatch run dev:pytest -v
       pass_filenames: false
+      stages: [push]

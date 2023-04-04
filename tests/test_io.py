@@ -5,7 +5,16 @@ from pathlib import Path
 
 import pytest  # pyre-ignore[21]
 
-from nbdefs.io import Definition, export, extract
+from nbdefs.io import (
+    Definition,
+    ExistsError,
+    FileSuffixError,
+    InputsError,
+    NotFoundError,
+    PathNameError,
+    export,
+    extract,
+)
 
 NBPATH = Path(__file__).parent / "files" / "test.ipynb"
 FUNCS = {
@@ -43,6 +52,28 @@ def test_export(source: Path, target: str, written: Path, tmp_path: Path) -> Non
 
 
 @pytest.mark.parametrize(
+    ("source", "target", "written"),
+    [
+        (NBPATH, "tmpfile.py", Path("tmpfile.py")),
+        (
+            NBPATH.parent,
+            "tmpdir",
+            Path("tmpdir") / NBPATH.with_suffix(".py").name,
+        ),
+    ],
+)
+def test_export_overwrite(
+    source: Path, target: str, written: Path, tmp_path: Path
+) -> None:
+    """Check that `exist_ok` raise errors correctly."""
+    export(source, tmp_path / target)
+    export(source, tmp_path / target, exist_ok=True)
+    with pytest.raises(ExistsError):
+        export(source, tmp_path / target, exist_ok=False)
+    assert (tmp_path / written).read_text("utf-8") == "\n\n".join(FUNCS.values())
+
+
+@pytest.mark.parametrize(
     ("source", "include", "exclude"),
     [
         (NBPATH, None, None),
@@ -63,3 +94,27 @@ def test_extract(
         for fname, fsrc in FUNCS.items()
         if fname in _keep and fname not in _remove
     }
+
+
+def test_errors(tmp_path: Path) -> None:
+    """Raise errors."""
+    with pytest.raises(FileSuffixError):
+        export(NBPATH, tmp_path / "target.txt")
+    with pytest.raises(PathNameError):
+        export(NBPATH, tmp_path / "target")
+    with pytest.raises(NotFoundError):
+        extract(src="NBPATH")
+
+    with pytest.raises(InputsError):
+        extract(src=NBPATH, include=[], exclude=[])
+    with pytest.raises(InputsError):
+        extract(src=NBPATH.parents[1])
+
+    export(NBPATH, tmp_path / "target.py")
+    with pytest.raises(ExistsError):
+        export(NBPATH, tmp_path / "target.py", exist_ok=False)
+
+
+def test__combine_funcs() -> None:
+    """Combine functions from source and destinations."""
+    ...
