@@ -1,0 +1,54 @@
+name: Publish
+on:
+  release:
+    types: [ published ]
+
+env:
+  PYTHON_VERSION: "3.7"
+
+jobs:
+  release:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Hatch
+        run: python3 -m pip install hatch
+      - name: QA
+        run: hatch run dev:hooks
+      - name: Get dynamic version from hatch
+        run: echo '`PACKAGE_VERSION=${hatch version}`' >> $GITHUB_ENV
+      - name: Create tag
+        uses: pkgdeps/git-tag-action@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repo: ${{ github.repository }}
+          git_commit_sha: ${{ github.sha }}
+          version: ${{ env.PACKAGE_VERSION }}
+      - name: Install dependencies and build
+        run: hatch build
+      - name: Publish to Test PyPi
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+          HATCH_INDEX_REPO: test
+        run: hatch publish
+      - name: Publish to PyPi
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
+          HATCH_INDEX_REPO: main
+        run: hatch publish
+      - name: Bump version
+        run: hatch version patch
+      - name: Push changes
+        uses: github-actions-x/commit@v2.9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          push-branch: 'main'
+          commit-message: '[Automated commit] Bump hatch version'
+          files: nbdefs2py/__about__.py
+          name: Github Actions
+          email: github-actions[bot]@users.noreply.github.com
