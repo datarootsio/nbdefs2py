@@ -9,9 +9,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "Murilo Cunha", email = "murilo@dataroots.io" },
-]
+authors = [{ name = "Murilo Cunha", email = "murilo@dataroots.io" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -22,7 +20,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = ["nbformat>=5.7"]
 dynamic = ["version"]
 
 [project.urls]
@@ -33,18 +31,8 @@ Source = "https://github.com/unknown/nbdefs2py"
 [tool.hatch.version]
 path = "nbdefs2py/__about__.py"
 
-[tool.hatch.envs.default]
-dependencies = [
-  "nbformat>=5.7",
-]
-
 [tool.hatch.envs.dev]
-extra-dependencies = [
-  "pre-commit>=3.2.0",
-  "pytest",
-  "pytest-cov",
-  "ipykernel",
-]
+dependencies = ["pre-commit>=3.2.0", "pytest", "pytest-cov", "ipykernel"]
 [tool.hatch.envs.dev.scripts]
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nbdefs2py --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
@@ -56,16 +44,10 @@ python = ["37", "38", "39", "310", "311"]
 [tool.coverage.run]
 branch = true
 parallel = true
-omit = [
-  "nbdefs2py/__about__.py",
-]
+omit = ["nbdefs2py/__about__.py"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.ruff]
 select = ["ALL"]
