@@ -42,6 +42,17 @@ jobs:
           HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
           HATCH_INDEX_REPO: main
         run: hatch publish
+      - name: Create release
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "${{ env.PACKAGE_VERSION }}",
+              generate_release_notes: true
+            })
       - name: Bump version
         run: hatch version patch
       - name: Push changes
