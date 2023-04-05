@@ -41,7 +41,7 @@ dependencies = [
 
 [tool.hatch.envs.dev]
 extra-dependencies = [
-  "pre-commit",
+  "pre-commit>=3.2.2",
   "pytest",
   "pytest-cov",
   "ipykernel",
