@@ -20,7 +20,7 @@ jobs:
       - name: QA
         run: hatch run dev:hooks
       - name: Get dynamic version from hatch
-        run: echo '`PACKAGE_VERSION=${hatch version}`' >> $GITHUB_ENV
+        run: echo "PACKAGE_VERSION=`hatch version`" >> $GITHUB_ENV
       - name: Create tag
         uses: pkgdeps/git-tag-action@v2
         with:
