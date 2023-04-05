@@ -46,9 +46,10 @@ extra-dependencies = [
   "pytest-cov",
   "ipykernel",
 ]
-[tool.hatch.envs.default.scripts]
+[tool.hatch.envs.dev.scripts]
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nbdefs2py --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
+hooks = "pre-commit run --hook-stage pre-commit --hook-stage pre-push --all-files"
 
 [[tool.hatch.envs.test.matrix]]
 python = ["37", "38", "39", "310", "311"]
